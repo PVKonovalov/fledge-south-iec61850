@@ -198,7 +198,7 @@ class IEC61850ClientConfig
         return m_caCertificates;
     };
 
-    static bool isValidIPAddress (const std::string& addrStr);
+    static bool isValidHostName (const std::string& addrStr);
 
     static int getCdcTypeFromString (const std::string& cdc);
 

@@ -82,15 +82,29 @@ IEC61850ClientConfig::getExchangeDefinitionByPivotId (
 }
 
 bool
-IEC61850ClientConfig::isValidIPAddress (const std::string& addrStr)
+IEC61850ClientConfig::isValidHostName(const string& addrStr)
 {
-    // see
-    // https://stackoverflow.com/questions/318236/how-do-you-validate-that-a-string-is-a-valid-ipv4-address-in-c
     struct sockaddr_in sa;
-    int result = inet_pton (AF_INET, addrStr.c_str (),
-                            &(sa.sin_addr)); // LCOV_EXCL_LINE
+    int result = inet_pton(AF_INET, addrStr.c_str(), &(sa.sin_addr));
+    if (result == 1) {
+        return true;
+    }
 
-    return (result == 1);
+    // Check if it's a valid IPv6 address
+    struct sockaddr_in6 sa6;
+    result = inet_pton(AF_INET6, addrStr.c_str(), &(sa6.sin6_addr));
+    if (result == 1) {
+        return true;
+    }
+
+    // If basic syntax validation passes, try to resolve the domain name
+    struct hostent* host_entry = gethostbyname(addrStr.c_str());
+    if (host_entry != nullptr) {
+        // Successfully resolved the domain name
+        return true;
+    }
+
+    return false; // Invalid hostname or IP address
 }
 
 void
@@ -110,6 +124,8 @@ IEC61850ClientConfig::~IEC61850ClientConfig ()
 void
 IEC61850ClientConfig::importProtocolConfig (const std::string& protocolConfig)
 {
+    std::string beforeLog = Iec61850Utility::PluginName + " - IEC61850ClientConfig::importProtocolConfig -";
+
     m_protocolConfigComplete = false;
 
     Document document;
@@ -157,10 +173,9 @@ IEC61850ClientConfig::importProtocolConfig (const std::string& protocolConfig)
         if (connection.HasMember (JSON_IP) && connection[JSON_IP].IsString ())
         {
             std::string srvIp = connection[JSON_IP].GetString ();
-            if (!isValidIPAddress (srvIp))
+            if (!isValidHostName (srvIp))
             {
-                Iec61850Utility::log_error ("Invalid Ip address %s",
-                                            srvIp.c_str ());
+                Iec61850Utility::log_error("%s srv_ip %s is not a valid IP address -> ignore", beforeLog.c_str(), srvIp.c_str());
                 continue;
             }
             if (connection.HasMember (JSON_PORT)

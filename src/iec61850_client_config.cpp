@@ -4,6 +4,7 @@
 #include <iec61850_client_config.hpp>
 #include <regex>
 #include <vector>
+#include <netdb.h>
 
 #define JSON_PROTOCOL_STACK "protocol_stack"
 #define JSON_TRANSPORT_LAYER "transport_layer"

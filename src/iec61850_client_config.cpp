@@ -82,7 +82,7 @@ IEC61850ClientConfig::getExchangeDefinitionByPivotId (
 }
 
 bool
-IEC61850ClientConfig::isValidHostName(const string& addrStr)
+IEC61850ClientConfig::isValidHostName(const std::string& addrStr)
 {
     struct sockaddr_in sa;
     int result = inet_pton(AF_INET, addrStr.c_str(), &(sa.sin_addr));
